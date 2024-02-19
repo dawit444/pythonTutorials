@@ -1,24 +1,61 @@
 from PIL import Image
 
-def image_to_bits(image_path):
-  image = Image.open(image_path)
-  pixels = image.load()
-  bit_string = ""
+def image_to_byte_array(image_path):
+    # Open the image file
+    img = Image.open(image_path)
 
-  for y in range(image.height):
-    for x in range(image.width):
-      r, g, b = pixels[x, y]
-      r_bits = format(r, '08b')
-      g_bits = format(g, '08b')
-      b_bits = format(b, '08b')
-      pixel_bits = r_bits + g_bits + b_bits
-      bit_string += pixel_bits
+    # Convert the image to grayscale
+    img = img.convert('L')
 
-  return bit_string
+    # Convert the image to a byte array
+    byte_array = img.tobytes()
 
-# Example usage
-image_path = r"C:\Users\GAEDC\Downloads\silence.jpg"
-bit_string = image_to_bits(image_path)
+    return byte_array, img.width, img.height
 
-# Further processing or saving the bit_string as needed
-print(bit_string)  # Print the first 100 bits for example
+def byte_array_to_image(byte_array, width, height, output_path):
+    # Create a new image with the given width and height
+    img = Image.frombytes('L', (width, height), byte_array)
+
+    # Save the image in PNG format
+    img.save(output_path)
+
+    # Display the image (optional)
+    img.show()
+
+def save_byte_array_to_txt(byte_array, output_path):
+    # Save the byte array to a text file
+    with open(output_path, 'wb') as file:
+        file.write(byte_array)
+
+def read_byte_array_from_txt(input_path, width, height):
+    # Read the byte array from a text file
+    with open(input_path, 'rb') as file:
+        byte_array = file.read()
+
+    return byte_array
+
+# User Input
+input_type = input("Enter 'image' for image path or 'byte' for byte array file: ").lower()
+
+if input_type == 'image':
+    # User inputs image path
+    image_path = input("Enter the path to the image file: ")
+
+    # Convert image to byte array
+    byte_array, width, height = image_to_byte_array(image_path)
+
+    # Save byte array to a text file
+    save_byte_array_to_txt(byte_array, 'output_byte_array.txt')
+
+elif input_type == 'byte':
+    # User inputs byte array file path
+    byte_array_path = input("Enter the path to the byte array file (.txt): ")
+
+    # Read byte array from text file
+    byte_array = read_byte_array_from_txt(byte_array_path, width, height)
+
+    # Convert byte array back to image and save it as PNG
+    byte_array_to_image(byte_array, width, height, 'output_image.png')
+
+else:
+    print("Invalid input type. Please enter 'image' or 'byte'.")
